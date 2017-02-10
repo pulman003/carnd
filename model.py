@@ -51,27 +51,6 @@ def generator(samples, batch_size=32):
             y_train = np.array(angles)
             #print (X_train.shape)
             yield sklearn.utils.shuffle(X_train, y_train)
-'''            
-def process_line(line):
-    row = line.split(',')
-    imgpath = row[0]
-#    print (imgpath)
-    x = cv2.resize(cv2.imread(imgpath), (160, 80))
-    y = [row[3]]
-    return x, y
-
-def get_data(log, path):
-    x = []
-    y = []
-    while 1:
-        f=open(path+log, 'rt')
-        for line in f:
-            i, j = process_line(line)
-            x.append(i)
-            y.append(j)
-        yield (np.array(x), np.array(y))#({'input_1': x}, {'output': y})
-        f.close()
-'''
 
 def get_model(time_len=1):
   ch, row, col = 3, 80, 320  # camera format (scaled by 2)
@@ -106,6 +85,7 @@ validation_generator = generator(validation_samples, batch_size = FLAGS.batch_si
 model_path = FLAGS.model
 if model_path:
     model = load_model(model_path)
+    print("Loaded")
 else:
     model = get_model()
 model.fit_generator(train_generator, samples_per_epoch=len(train_samples), nb_epoch=FLAGS.epochs, validation_data=validation_generator, nb_val_samples = len(validation_samples))
