@@ -12,7 +12,6 @@ from keras.layers import Convolution2D
 from keras.models import Sequential
 from keras.models import load_model
 
-
 tf.python.control_flow_ops = tf
 
 flags = tf.app.flags
@@ -59,15 +58,22 @@ def get_model(time_len=1):
   model.add(Lambda(lambda x: x/127.5 - 1.,
             input_shape=(row, col, ch),
             output_shape=(row, col, ch)))
-  model.add(Convolution2D(16, 8, 8, subsample=(4, 4), border_mode="same"))
+  model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="same"))
   model.add(ELU())
-  model.add(Convolution2D(32, 5, 5, subsample=(2, 2), border_mode="same"))
+  model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="same"))
   model.add(ELU())
-  model.add(Convolution2D(64, 5, 5, subsample=(2, 2), border_mode="same"))
+  model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="same"))
+  model.add(ELU())
+  model.add(Convolution2D(64, 3, 3, border_mode="same"))
+  model.add(ELU())
+  model.add(Convolution2D(64, 3, 3, border_mode="same"))
   model.add(Flatten())
   model.add(Dropout(0.2))
   model.add(ELU())
-  model.add(Dense(512))
+  model.add(Dense(100))
+  model.add(Dropout(0.5))
+  model.add(ELU())
+  model.add(Dense(50))
   model.add(Dropout(0.5))
   model.add(ELU())
   model.add(Dense(1))
