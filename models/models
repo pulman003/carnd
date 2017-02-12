@@ -1,5 +1,5 @@
 model.1 - on bridge - nvidia model - lap1, 5 epochs - edge, 5 epochs - edge, 5 epochs
-model.2 - on bridge - nvidia model - 10_laps, 5 epochs
-model.3 - on bridge - nvidia model - 10_laps, 5 epochs - edge, 5 epochs - edge, 5 epochs
 model.4 - on bridge - nvidia model(revised) - 10_laps_edges, 7 epochs - edge, 10 epochs
 model.5 - first turn - nvidia model(revised) - udacity_data 5 epochs - udacity_data 5 epochs
+model.6 - first turn - comma.ai model - suggested 5 epochs - reverse 5 epochs
+model.7 - past bridge - nvidia model(less dropout) - udacity_data 10 epochs

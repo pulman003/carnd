@@ -7,7 +7,7 @@ import cv2
 import sklearn
 
 from sklearn.model_selection import train_test_split
-from keras.layers import Dense, Dropout, Flatten, Lambda, ELU
+from keras.layers import Dense, Dropout, Flatten, Lambda, Activation
 from keras.layers import Convolution2D
 from keras.models import Sequential
 from keras.models import load_model
@@ -17,12 +17,14 @@ tf.python.control_flow_ops = tf
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
+# Flags to allow me to select data, models, epochs and batch sizes
 flags.DEFINE_string('data', '', 'Data path')
 flags.DEFINE_string('model', '', 'Model path')
 flags.DEFINE_integer('epochs', 5, 'Number of epochs')
 flags.DEFINE_integer('batch_size', 256, 'Batch size')
 
 samples = []
+# Open the data folder and read in data from driving_log.csv
 with open(FLAGS.data+'driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     for line in reader:
@@ -39,6 +41,7 @@ def generator(samples, batch_size=32):
 
             images = []
             angles = []
+            # Open the image and do some preprocessing (only look at the bottom half
             for batch_sample in batch_samples:
                 name = FLAGS.data+'IMG/'+batch_sample[0].split('/')[-1]
                 center_image = cv2.imread(name)
@@ -48,49 +51,49 @@ def generator(samples, batch_size=32):
             X_train = np.array(images)
             X_train = X_train[:,80:,:,:]
             y_train = np.array(angles)
-            #print (X_train.shape)
             yield sklearn.utils.shuffle(X_train, y_train)
 
-def get_model(time_len=1):
-  ch, row, col = 3, 80, 320  # camera format (scaled by 2)
-
+# Model follows the NVidia model with minor edits to dropout
+def get_model():
+  ch, row, col = 3, 80, 320  # camera format
+  
   model = Sequential()
   model.add(Lambda(lambda x: x/127.5 - 1.,
             input_shape=(row, col, ch),
             output_shape=(row, col, ch)))
   model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="same"))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="same"))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="same"))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Convolution2D(64, 3, 3, border_mode="same"))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Convolution2D(64, 3, 3, border_mode="same"))
   model.add(Flatten())
   model.add(Dropout(0.2))
-  model.add(ELU())
+  model.add(Activation('relu'))
+  model.add(Dense(1164))
+  model.add(Dropout(0.2))
+  model.add(Activation('relu'))
   model.add(Dense(100))
   model.add(Dropout(0.2))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Dense(50))
   model.add(Dropout(0.2))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Dense(10))
   model.add(Dropout(0.2))
-  model.add(ELU())
+  model.add(Activation('relu'))
   model.add(Dense(1))
 
   model.compile(optimizer="adam", loss="mse")
   return model
 
-#img = get_data('driving_log.csv', FLAGS.data)
-#for image in img:
-#    print(image)
 train_generator = generator(train_samples, batch_size=FLAGS.batch_size)
-#print(next(train_generator))
 validation_generator = generator(validation_samples, batch_size = FLAGS.batch_size)
 
+# This allows me to revist and load previous models
 model_path = FLAGS.model
 if model_path:
     model = load_model(model_path)
